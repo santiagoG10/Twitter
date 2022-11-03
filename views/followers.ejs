@@ -49,25 +49,20 @@
                 </div>
               </div>
             </div>
-            <% if (!user.following.includes(follower._id)) {%>
             <form
               action="/<%= follower.id %>/follow?_method=PATCH"
               method="post"
             >
+              <% if (!user.following.includes(follower._id)) {%>
               <button type="submit" class="btn follow-button w-5">
                 Follow
               </button>
-            </form>
-            <% } %> <% if (user.following.includes(follower._id)) {%>
-            <form
-              action="/<%= follower.id %>/unfollow?_method=PATCH"
-              method="post"
-            >
+              <% } %> <% if (user.following.includes(follower._id)) {%>
               <button type="submit" class="btn follow-button w-5">
                 Unfollow
               </button>
+              <% } %>
             </form>
-            <% } %>
           </div>
 
           <% } %>

@@ -10,7 +10,6 @@ privateRouter.post("/", privateController.create);
 privateRouter.get("/profile/:username", privateController.indexUser);
 privateRouter.delete("/profile/:tweetId/delete", privateController.deleteTweet);
 privateRouter.patch("/:tweetId/like", privateController.updateLike);
-privateRouter.patch("/:tweetId/removeLike", privateController.removeLike);
 privateRouter.get("/profile/:username/followers", privateController.followers);
 privateRouter.get("/profile/:username/following", privateController.following);
 privateRouter.patch("/:id/follow", privateController.follow);

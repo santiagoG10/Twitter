@@ -1,5 +1,6 @@
 const Tweet = require("../models/Tweet");
 const User = require("../models/User");
+const _ = require("lodash");
 
 async function index(req, res) {
   const loggedUser = await User.findById(req.user._id);
@@ -34,16 +35,23 @@ async function deleteTweet(req, res) {
 }
 
 async function updateLike(req, res) {
-  await Tweet.findByIdAndUpdate(req.params.tweetId, {
-    $push: { likes: req.user._id },
-  });
-  return res.redirect("back");
-}
-
-async function removeLike(req, res) {
-  await Tweet.findByIdAndUpdate(req.params.tweetId, {
-    $pull: { likes: req.user._id },
-  });
+  const tweet = await Tweet.findById(req.params.tweetId).populate("likes");
+  console.log(tweet);
+  console.log(_.findIndex(tweet.likes, { _id: req.user._id }));
+  if (_.findIndex(tweet.likes, { _id: req.user._id }) === -1) {
+    await Tweet.findByIdAndUpdate(req.params.tweetId, {
+      $push: { likes: req.user._id },
+    });
+  } else {
+    await Tweet.findByIdAndUpdate(req.params.tweetId, {
+      $pull: { likes: req.user._id },
+    });
+  }
+  const editedTweet = await Tweet.findById(req.params.tweetId).populate(
+    "likes"
+  );
+  console.log(_.findIndex(editedTweet.likes, { _id: req.user_id }));
+  console.log(editedTweet);
   return res.redirect("back");
 }
 
@@ -62,22 +70,26 @@ async function following(req, res) {
 }
 
 async function follow(req, res) {
-  await User.findByIdAndUpdate(req.params.id, {
-    $push: { followers: req.user._id },
-  });
-  await User.findByIdAndUpdate(req.user._id, {
-    $push: { following: req.params.id },
-  });
+  const user = await User.findById(req.params.id);
+  if (_.findIndex(user.followers, { _id: req.user._id }) === -1) {
+    await User.findByIdAndUpdate(req.params.id, {
+      $push: { followers: req.user._id },
+    });
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { following: req.params.id },
+    });
+  } else {
+    await User.findByIdAndUpdate(req.params.id, {
+      $pull: { followers: req.user._id },
+    });
+    await User.findByIdAndUpdate(req.user._id, {
+      $pull: { following: req.params.id },
+    });
+  }
   return res.redirect("back");
 }
 
 async function unfollow(req, res) {
-  await User.findByIdAndUpdate(req.params.id, {
-    $pull: { followers: req.user._id },
-  });
-  await User.findByIdAndUpdate(req.user._id, {
-    $pull: { following: req.params.id },
-  });
   return res.redirect("back");
 }
 
@@ -87,7 +99,6 @@ module.exports = {
   create,
   deleteTweet,
   updateLike,
-  removeLike,
   follow,
   unfollow,
   followers,
